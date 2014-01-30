@@ -110,7 +110,7 @@
     
     // Grabs the popover properties.
 	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
-#if __IPHONE_OS_VERSION_MIN_REQUIRED > __IPHONE_6_1
+#ifdef __IPHONE_7_0
 		self.preferredContentSize = scene.preferredContentSize;
 #endif
 	} else {
@@ -124,7 +124,7 @@
     self.editing = scene.editing;
 	
 	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
-#if __IPHONE_OS_VERSION_MIN_REQUIRED > __IPHONE_6_1
+#ifdef __IPHONE_7_0
 		// Translucent bar properties.
 		self.automaticallyAdjustsScrollViewInsets = scene.automaticallyAdjustsScrollViewInsets;
 		self.edgesForExtendedLayout = scene.edgesForExtendedLayout;
@@ -186,7 +186,7 @@
     [self.scene didMoveToParentViewController:self];
     
 	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
-#if __IPHONE_OS_VERSION_MIN_REQUIRED > __IPHONE_6_1
+#ifdef __IPHONE_7_0
 		scene.view.translatesAutoresizingMaskIntoConstraints = NO;
 		
 		NSDictionary * views = @{
@@ -262,7 +262,7 @@
 }
 
 - (UIStatusBarAnimation)preferredStatusBarUpdateAnimation {
-#if __IPHONE_OS_VERSION_MIN_REQUIRED > __IPHONE_6_1
+#ifdef __IPHONE_7_0
 	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
 		return [self.scene preferredStatusBarUpdateAnimation];
 #endif
@@ -270,7 +270,7 @@
 }
 
 - (BOOL)prefersStatusBarHidden {
-#if __IPHONE_OS_VERSION_MIN_REQUIRED > __IPHONE_6_1
+#ifdef __IPHONE_7_0
 	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
 		return [self.scene prefersStatusBarHidden];
 #endif
