@@ -23,4 +23,10 @@
     return [self rbsl_storyboardLink] ?: self;
 }
 
+- (UIViewController *)rbsl_linkedViewController {
+    if ([self isKindOfClass:[RBStoryboardLink class]])
+        return ((RBStoryboardLink *)self).scene;
+    return self;
+}
+
 @end

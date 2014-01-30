@@ -24,4 +24,6 @@
  */
 - (UIViewController *)rbsl_targetViewController;
 
+- (UIViewController *)rbsl_linkedViewController;
+
 @end
