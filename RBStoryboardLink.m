@@ -25,6 +25,12 @@
 #import "RBStoryboardLink.h"
 #import "RBStoryboardLinkSource.h"
 
+// System version
+#define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
+#define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
 
 @interface RBStoryboardLink ()
 
@@ -103,20 +109,32 @@
     self.providesPresentationContextTransitionStyle = scene.providesPresentationContextTransitionStyle;
     
     // Grabs the popover properties.
-    self.preferredContentSize = scene.preferredContentSize;
+	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_6_1
+		self.preferredContentSize = scene.preferredContentSize;
+#endif
+	} else {
+		self.contentSizeForViewInPopover = scene.contentSizeForViewInPopover;
+	}
     self.modalInPopover = scene.modalInPopover;
     
     // Grabs miscellaneous properties.
     self.title = scene.title;
     self.hidesBottomBarWhenPushed = scene.hidesBottomBarWhenPushed;
     self.editing = scene.editing;
-    
-    // Translucent bar properties.
-    self.automaticallyAdjustsScrollViewInsets = scene.automaticallyAdjustsScrollViewInsets;
-    self.edgesForExtendedLayout = scene.edgesForExtendedLayout;
-    self.extendedLayoutIncludesOpaqueBars = scene.extendedLayoutIncludesOpaqueBars;
-    self.modalPresentationCapturesStatusBarAppearance = scene.modalPresentationCapturesStatusBarAppearance;
-    self.transitioningDelegate = scene.transitioningDelegate;
+	
+	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_6_1
+		// Translucent bar properties.
+		self.automaticallyAdjustsScrollViewInsets = scene.automaticallyAdjustsScrollViewInsets;
+		self.edgesForExtendedLayout = scene.edgesForExtendedLayout;
+		self.extendedLayoutIncludesOpaqueBars = scene.extendedLayoutIncludesOpaqueBars;
+		self.modalPresentationCapturesStatusBarAppearance = scene.modalPresentationCapturesStatusBarAppearance;
+		self.transitioningDelegate = scene.transitioningDelegate;
+#endif
+	} else {
+		self.wantsFullScreenLayout = scene.wantsFullScreenLayout;
+	}
 }
 
 - (NSString *)vertialConstraintString {
@@ -148,28 +166,43 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    // Adds the view controller as a child view.
     UIViewController * scene = self.scene;
+
+	if (SYSTEM_VERSION_LESS_THAN(@"7.0")) {
+		// Adjusts the frame of the child view.
+		CGRect frame = self.view.frame;
+		CGRect linkedFrame = scene.view.frame;
+
+		linkedFrame.origin.x -= frame.origin.x;
+		linkedFrame.origin.y -= frame.origin.y;
+		// The scene's main view must be made flexible so it will resize properly
+		// in the container.
+		scene.view.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
+		scene.view.frame = linkedFrame;
+	}
+    // Adds the view controller as a child view.
     [self addChildViewController:scene];
     [self.view addSubview:scene.view];
     [self.scene didMoveToParentViewController:self];
     
-    scene.view.translatesAutoresizingMaskIntoConstraints = NO;
-    
-    NSDictionary * views = @{
-                             @"topGuide"    : self.topLayoutGuide,
-                             @"bottomGuide" : self.bottomLayoutGuide,
-                             @"view"        : scene.view,
-                             };
-    
-    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[view]|"
-                                                                      options:0
-                                                                      metrics:nil
-                                                                        views:views]];
-    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[self vertialConstraintString]
-                                                                      options:0
-                                                                      metrics:nil
-                                                                        views:views]];
+	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
+		scene.view.translatesAutoresizingMaskIntoConstraints = NO;
+		
+		NSDictionary * views = @{
+								 @"topGuide"    : self.topLayoutGuide,
+								 @"bottomGuide" : self.bottomLayoutGuide,
+								 @"view"        : scene.view,
+								 };
+		
+		[self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[view]|"
+																		  options:0
+																		  metrics:nil
+																			views:views]];
+		[self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[self vertialConstraintString]
+																		  options:0
+																		  metrics:nil
+																			views:views]];
+	}
 }
 
 - (void)viewWillAppear:(BOOL)animated {
